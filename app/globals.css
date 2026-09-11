@@ -8,6 +8,7 @@
   --paper: #f6f8f3;
   --card: #fffefa;
   --green: #376c5b;
+  --soft-green: #edf4eb;
 }
 
 * {
@@ -33,6 +34,18 @@ button {
 .app-shell {
   min-height: 100vh;
   background: radial-gradient(circle at 85% 5%, #e9f0df 0, transparent 28%), var(--paper);
+  transition: background .25s, color .25s;
+}
+
+.dark-mode {
+  --ink: #e8e8e8;
+  --muted: #a0a0a0;
+  --line: #3b3b3b;
+  --green: #d4d4d4;
+  --soft-green: #303030;
+  --paper: #181818;
+  --card: #242424;
+  background: radial-gradient(circle at 85% 5%, #303030 0, transparent 30%), var(--paper);
 }
 
 .topbar {
@@ -79,6 +92,53 @@ button {
   align-items: center;
   gap: 7px;
   font-family: 'DM Mono', monospace;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  background: var(--soft-green);
+}
+
+.dark-mode .status-dot {
+  background: #b7b7b7;
+  box-shadow: 0 0 0 4px #343434;
+}
+
+.dark-mode .progress-track span {
+  background: #b7b7b7;
+}
+
+.dark-mode .level-icon,
+.dark-mode .deck-tag {
+  background: #353535;
+  color: #d1d1d1;
+}
+
+.dark-mode .level-icon.mint,
+.dark-mode .level-icon.sky,
+.dark-mode .level-icon.yellow,
+.dark-mode .level-icon.coral,
+.dark-mode .level-icon.plum {
+  background: #353535;
+  color: #d1d1d1;
 }
 
 .status-dot {
@@ -477,7 +537,7 @@ button {
 .kanji {
   color: #1e302c;
   font-family: 'Noto Serif JP', serif;
-  font-size: clamp(112px, 18vw, 156px);
+  font-size: clamp(80px, 16vw, 112px);
   font-weight: 500;
   line-height: 1;
 }
@@ -601,6 +661,102 @@ button {
   font-size: 17px;
 }
 
+.reveal-button {
+  display: block;
+  margin: 22px auto 0;
+  padding: 10px 16px;
+  border: 1px solid #c8d9ca;
+  border-radius: 7px;
+  background: var(--soft-green);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.reveal-button span {
+  margin-left: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  opacity: .7;
+}
+
+.dark-mode .brand-mark {
+  background: #e8e8e8;
+  color: #1a1a1a;
+}
+
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3 {
+  color: var(--ink);
+}
+
+.dark-mode .question-card,
+.dark-mode .input-wrap input {
+  color: var(--ink);
+}
+
+.dark-mode .revealed-answer {
+  background: #303030;
+}
+
+.dark-mode .level-row.selected,
+.dark-mode .count-pill,
+.dark-mode .review-count {
+  background: #303030;
+}
+
+.dark-mode .input-wrap input::placeholder {
+  color: #707070;
+}
+
+.dark-mode .reveal-button {
+  border-color: #565c58;
+}
+
+.dark-mode .kanji {
+  color: #f2f2f2;
+}
+
+.dark-mode .spark,
+.dark-mode .empty-symbol {
+  color: #a9aaa9;
+}
+
+.dark-mode .particle-field span {
+  background: #d5d5d5;
+}
+
+.dark-mode .feedback,
+.dark-mode .correct-feedback,
+.dark-mode .revealed-footer button,
+.dark-mode .primary-button {
+  color: #d5d5d5;
+}
+
+.dark-mode .primary-button {
+  border-color: #565656;
+  background: #303030;
+}
+
+.dark-mode .loader {
+  border-color: #3f3f3f;
+  border-top-color: #c5c5c5;
+}
+
+.dark-mode .eyebrow,
+.dark-mode .card-number,
+.dark-mode .answer-zone label,
+.dark-mode .answer-label,
+.dark-mode .revealed-answer>span:last-child,
+.dark-mode .session-note {
+  color: #999999;
+}
+
+.dark-mode .note-mark {
+  border-color: #666666;
+}
+
 .session-note {
   display: flex;
   align-items: center;
@@ -679,6 +835,10 @@ button {
 
   .topbar-meta {
     display: none;
+  }
+
+  .topbar-actions {
+    gap: 0;
   }
 
   .workspace {

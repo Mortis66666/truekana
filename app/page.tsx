@@ -96,9 +96,36 @@ export default function Home() {
   const [revealed, setRevealed] = useState(false);
   const [feedback, setFeedback] = useState<"idle" | "correct">("idle");
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rawInputRef = useRef("");
+  const storageReadyRef = useRef(false);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const savedDarkMode = window.localStorage.getItem("truekana-dark-mode");
+      const savedReviewPile = window.localStorage.getItem("truekana-review-pile");
+      if (savedDarkMode !== null) setDarkMode(savedDarkMode === "true");
+      if (savedReviewPile) {
+        try {
+          const parsedCards = JSON.parse(savedReviewPile) as Card[];
+          if (Array.isArray(parsedCards)) {
+            setReviewCards(parsedCards.filter((card) => card?.question && Array.isArray(card.answer)));
+          }
+        } catch {
+          window.localStorage.removeItem("truekana-review-pile");
+        }
+      }
+      storageReadyRef.current = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!storageReadyRef.current) return;
+    window.localStorage.setItem("truekana-dark-mode", String(darkMode));
+    window.localStorage.setItem("truekana-review-pile", JSON.stringify(reviewCards));
+  }, [darkMode, reviewCards]);
 
   useEffect(() => {
     let active = true;
@@ -214,6 +241,21 @@ export default function Home() {
     checkAnswer(nextKana);
   }
 
+  function handleInputChange(value: string) {
+    const nextKana = toKana(value);
+    rawInputRef.current = value;
+    setInput(nextKana);
+    checkAnswer(nextKana);
+  }
+
+  function toggleDarkMode() {
+    setDarkMode((current) => {
+      const nextMode = !current;
+      window.localStorage.setItem("truekana-dark-mode", String(nextMode));
+      return nextMode;
+    });
+  }
+
   function giveUp() {
     if (!currentCard || revealed) return;
     if (advanceTimer.current) {
@@ -240,10 +282,10 @@ export default function Home() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${darkMode ? "dark-mode" : ""}`}>
       <header className="topbar">
         <div className="brand"><span className="brand-mark">字</span><span>TrueKana</span></div>
-        <div className="topbar-meta"><span className="status-dot" /> <span>JLPT reading drills</span></div>
+        <div className="topbar-actions"><div className="topbar-meta"><span className="status-dot" /> <span>JLPT reading drills</span></div><button className="theme-toggle" onClick={toggleDarkMode} aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}>{darkMode ? "☼" : "☾"}</button></div>
       </header>
 
       <div className="workspace">
@@ -272,7 +314,7 @@ export default function Home() {
               <div className="card-topline"><span className={`deck-tag ${levelMeta[currentCard.level].color}`}>JLPT {currentCard.level}</span><span className="card-number">Card {String(cardIndex + 1).padStart(2, "0")}</span></div>
               <div className="kanji-wrap"><span className="kanji">{currentCard.question}</span><span className="spark">✦</span></div>
               <div className="answer-zone">
-                {revealed ? <div className="revealed-answer"><span className="answer-label">Answer</span><strong>{currentCard.answer.join(" / ")}</strong><span>{currentCard.meaning}</span></div> : <><label htmlFor="reading">Reading</label><div className="input-wrap"><input ref={inputRef} id="reading" value={input} onChange={(event) => { setInput(event.target.value); rawInputRef.current = event.target.value; }} onKeyDown={handleKeyDown} onPaste={handlePaste} placeholder="type in romaji..." autoComplete="off" autoCapitalize="off" spellCheck={false} /><span className="kana-placeholder">{input ? "" : "あ"}</span></div><div className="input-hint"><span>Type romaji, edit the kana directly</span><span className="mini-kbd">↵ reveal / next</span></div></>}
+                {revealed ? <div className="revealed-answer"><span className="answer-label">Answer</span><strong>{currentCard.answer.join(" / ")}</strong><span>{currentCard.meaning}</span></div> : <><label htmlFor="reading">Reading</label><div className="input-wrap"><input ref={inputRef} id="reading" value={input} onChange={(event) => handleInputChange(event.target.value)} onKeyDown={handleKeyDown} onPaste={handlePaste} placeholder="type in romaji..." autoComplete="off" autoCapitalize="off" spellCheck={false} /><span className="kana-placeholder">{input ? "" : "あ"}</span></div><div className="input-hint"><span>Type romaji, edit the kana directly</span><span className="mini-kbd">↵ reveal / next</span></div><button className="reveal-button" onClick={giveUp}>Reveal answer <span>↵</span></button></>}
               </div>
               {feedback === "correct" && <div className="feedback correct-feedback">Correct <span>moving on</span></div>}
               {revealed && <div className="revealed-footer"><span>Added to review pile</span><button onClick={nextCard}>Next card <span>→</span></button></div>}
