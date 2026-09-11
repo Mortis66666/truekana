@@ -126,6 +126,18 @@ button {
   background: #b7b7b7;
 }
 
+.dark-mode .progress-track {
+  background: #454545;
+}
+
+.dark-mode .progress-copy strong {
+  color: #e8e8e8;
+}
+
+.dark-mode .progress-copy span {
+  color: #a0a0a0;
+}
+
 .dark-mode .level-icon,
 .dark-mode .deck-tag {
   background: #353535;
@@ -704,6 +716,11 @@ button {
 .dark-mode .count-pill,
 .dark-mode .review-count {
   background: #303030;
+}
+
+.dark-mode .count-pill,
+.dark-mode .review-count {
+  color: #d0d0d0;
 }
 
 .dark-mode .input-wrap input::placeholder {
