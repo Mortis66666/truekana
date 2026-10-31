@@ -433,6 +433,52 @@ button {
   max-width: 900px;
 }
 
+.legal-content {
+  width: min(760px, 90vw);
+  margin: 0 auto;
+  padding: 70px 0 90px;
+}
+
+.legal-content h1 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(38px, 6vw, 64px);
+  letter-spacing: -3px;
+}
+
+.legal-lede {
+  max-width: 650px;
+  margin: 22px 0 48px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.legal-content section {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+
+.legal-content h2 {
+  margin: 0 0 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 21px;
+}
+
+.legal-content section p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.legal-updated {
+  margin-top: 32px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+
 .page-heading {
   display: flex;
   align-items: flex-start;

@@ -52,6 +52,7 @@ export default function LandingPage() {
                 <span>TrueKana</span>
                 <Link href="/guest">Guest mode</Link>
                 <Link href="/login">Sign in</Link>
+                <Link href="/privacy">Privacy</Link>
             </footer>
         </main>
     );
