@@ -25,6 +25,7 @@ create table if not exists public.study_sets (
     "reviewMode": "srs",
     "wrongRetryMinutes": 10,
     "shuffle": true,
+    "collectRandomly": true,
     "showReadingFirst": false
   }'::jsonb,
   created_at timestamptz not null default now()

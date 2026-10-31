@@ -20,6 +20,7 @@ export type StudySettings = {
   showDefinitionAfterCorrect: boolean;
   wrongRetryMinutes: number;
   shuffle: boolean;
+  collectRandomly: boolean;
 };
 
 const defaults: StudySettings = {
@@ -31,7 +32,8 @@ const defaults: StudySettings = {
   autoSubmission: true,
   showDefinitionAfterCorrect: false,
   wrongRetryMinutes: 10,
-  shuffle: true
+  shuffle: true,
+  collectRandomly: true
 };
 
 type Props = {
@@ -211,6 +213,22 @@ export default function StudySetForm({
           </span>
         </label>
       </div>
+      <label className="setting-option">
+        <input
+          type="checkbox"
+          checked={settings.collectRandomly}
+          onChange={event =>
+            setSettings(current => ({
+              ...current,
+              collectRandomly: event.target.checked
+            }))
+          }
+        />
+        <span>
+          <strong>Collect cards randomly</strong>
+          <small>Choose new cards randomly from all selected decks.</small>
+        </span>
+      </label>
       {settings.reviewMode === "simple" && (
         <div className="fixed-behavior-grid">
           {(["correct", "wrong"] as const).map(result => {

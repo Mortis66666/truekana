@@ -115,6 +115,7 @@ Indexes: `progress (user_id)`, `progress (study_set_id, due)`.
   "reviewMode": "srs",
   "wrongRetryMinutes": 10,
   "shuffle": true,
+  "collectRandomly": true,
   "showReadingFirst": false
 }
 ```
@@ -128,6 +129,9 @@ Indexes: `progress (user_id)`, `progress (study_set_id, due)`.
 | `once`          | never reappears                                   | never reappears (it is recorded but not repeated) |
 
 Keep settings in `jsonb` while they are small and change often. If a setting needs to be filtered or indexed in SQL, promote it to a real column.
+
+When `collectRandomly` is enabled, new cards are selected randomly from all
+decks included in the study set. It defaults to `true`.
 
 ## Core queries
 

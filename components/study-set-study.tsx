@@ -19,7 +19,8 @@ type Settings = {
   shuffle?: boolean;
 };
 type Stats = { totalCards: number; seenCards: number; correctCards: number };
-type Batch = { cards: StudyCard[]; settings: Settings; stats: Stats };
+type StudySetInfo = { name: string; deckNames: string[] };
+type Batch = { cards: StudyCard[]; settings: Settings; stats: Stats; studySet: StudySetInfo };
 
 async function studyFetch(path: string, init?: RequestInit) {
   const { data } = await getSupabaseClient().auth.getSession();
@@ -49,6 +50,7 @@ export default function StudySetStudy({ id }: { id: string }) {
   const router = useRouter();
   const [cards, setCards] = useState<StudyCard[]>([]);
   const [settings, setSettings] = useState<Settings>({});
+  const [studySet, setStudySet] = useState<StudySetInfo>({ name: "", deckNames: [] });
   const [index, setIndex] = useState(0);
   const [seenCount, setSeenCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
@@ -99,7 +101,8 @@ export default function StudySetStudy({ id }: { id: string }) {
       return {
         cards: nextCards,
         settings: payload.settings ?? {},
-        stats: payload.stats ?? { totalCards: 0, seenCards: 0, correctCards: 0 }
+        stats: payload.stats ?? { totalCards: 0, seenCards: 0, correctCards: 0 },
+        studySet: payload.studySet ?? { name: "", deckNames: [] }
       };
     },
     [id, router]
@@ -112,6 +115,7 @@ export default function StudySetStudy({ id }: { id: string }) {
     });
     setCards(batch.cards);
     setSettings(batch.settings);
+    setStudySet(batch.studySet);
     if (refreshStats) setStats(batch.stats);
     setIndex(0);
   }, []);
@@ -275,9 +279,15 @@ export default function StudySetStudy({ id }: { id: string }) {
       </header>
       <section className="study-page">
         <div className="page-heading">
-          <Link className="text-button header-link" href="/dashboard">
-            <span aria-hidden="true">←</span> All study sets
-          </Link>
+          <div className="study-set-context">
+            <Link className="text-button header-link" href="/dashboard">
+              <span aria-hidden="true">←</span> All study sets
+            </Link>
+            <div className="study-set-context-copy">
+              <strong>{studySet.name || "Study set"}</strong>
+              <span>{studySet.deckNames.length ? studySet.deckNames.join(" + ") : "Selected decks"}</span>
+            </div>
+          </div>
         </div>
         <div className="study-stats">
           <div className="progress-copy">

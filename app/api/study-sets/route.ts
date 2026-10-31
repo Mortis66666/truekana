@@ -11,6 +11,7 @@ const defaultSettings = {
   wrongBehavior: "next_session",
   correctDelayMinutes: 10,
   wrongDelayMinutes: 10,
+  collectRandomly: true,
 };
 
 export async function GET(request: Request) {

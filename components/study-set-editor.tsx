@@ -57,5 +57,26 @@ export default function StudySetEditor({ id }: { id?: string }) {
     const payload = await response.json();
     router.push(id ? `/study-sets/${id}` : `/study-sets/${payload.studySet.id}`);
   }
-  return <main className="account-page"><header className="topbar"><Link className="brand" href="/dashboard"><span className="brand-mark" aria-hidden="true">字</span><span>TrueKana</span></Link><div className="topbar-actions"><Link className="text-button header-link back-link" href={id ? `/study-sets/${id}` : "/dashboard"}><span aria-hidden="true">←</span> Back</Link></div></header><section className="account-content narrow-content"><div className="page-heading"><div><p className="eyebrow">{id ? "Edit study set" : "New study set"}</p><h1>{id ? "Tune your practice." : "Build your practice."}</h1><p className="muted">Choose the cards and behavior that belong to this study set.</p></div></div>{error ? <p className="api-error" role="alert">{error}</p> : (id && !initial) ? <div className="empty-state"><div className="loader" /><p>Loading settings...</p></div> : <StudySetForm decks={decks} initialName={initial?.name} initialDeckIds={initial?.deckIds} initialSettings={initial?.settings} submitLabel={id ? "Save settings" : "Create study set"} onSubmit={save} />}</section></main>;
+  async function resetProgress() {
+    if (!id || !window.confirm("Reset all progress for this study set? This cannot be undone.")) return;
+    const response = await authFetch(`/api/study-sets/${id}/reset`, { method: "POST" });
+    if (!response.ok) {
+      setError("Could not reset progress.");
+      return;
+    }
+    setError("");
+    window.alert("Progress reset.");
+  }
+
+  async function deleteStudySet() {
+    if (!id || !window.confirm("Delete this study set and all of its progress? This cannot be undone.")) return;
+    const response = await authFetch(`/api/study-sets/${id}`, { method: "DELETE" });
+    if (!response.ok) {
+      setError("Could not delete this study set.");
+      return;
+    }
+    router.replace("/dashboard");
+  }
+
+  return <main className="account-page"><header className="topbar"><Link className="brand" href="/dashboard"><span className="brand-mark" aria-hidden="true">字</span><span>TrueKana</span></Link><div className="topbar-actions"><Link className="text-button header-link back-link" href={id ? `/study-sets/${id}` : "/dashboard"}><span aria-hidden="true">←</span> Back</Link></div></header><section className="account-content narrow-content"><div className="page-heading"><div><p className="eyebrow">{id ? "Edit study set" : "New study set"}</p><h1>{id ? "Tune your practice." : "Build your practice."}</h1><p className="muted">Choose the cards and behavior that belong to this study set.</p></div></div>{error ? <p className="api-error" role="alert">{error}</p> : (id && !initial) ? <div className="empty-state"><div className="loader" /><p>Loading settings...</p></div> : <StudySetForm decks={decks} initialName={initial?.name} initialDeckIds={initial?.deckIds} initialSettings={initial?.settings} submitLabel={id ? "Save settings" : "Create study set"} onSubmit={save} />}{id && initial && <section className="danger-zone"><div><p className="eyebrow">Danger zone</p><h2>Reset or delete</h2><p>These actions permanently affect this study set.</p></div><div className="danger-actions"><button type="button" className="danger-button" onClick={() => void resetProgress()}>Reset progress</button><button type="button" className="danger-button danger-button-filled" onClick={() => void deleteStudySet()}>Delete study set</button></div></section>}</section></main>;
 }
