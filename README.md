@@ -16,7 +16,27 @@ const { data: { user } } = await getSupabaseClient().auth.getUser();
 const isLoggedIn = Boolean(user);
 ```
 
-`getUser()` returns the current authenticated user, or `null` when nobody is signed in. The account control also listens to `supabase.auth.onAuthStateChange(...)`, so it updates immediately after sign-in or sign-out. Use the `/login` page to create an account or sign in with email and password.
+`getUser()` returns the current authenticated user, or `null` when nobody is signed in. The account control also listens to `supabase.auth.onAuthStateChange(...)`, so it updates immediately after sign-in or sign-out. Use the `/login` page to create an account, sign in with email and password, or continue with Google.
+
+### Google sign-in setup
+
+Google sign-in uses Supabase OAuth and requires configuration in both Google
+Cloud and Supabase:
+
+1. In Google Cloud Console, create an OAuth 2.0 Web application client.
+2. Add the Supabase callback URL shown in Supabase under
+   **Authentication → Providers → Google** to the Google client's authorized
+   redirect URIs.
+3. Copy the Google client ID and secret into the Supabase Google provider
+   settings and enable the provider.
+4. In **Authentication → URL Configuration**, set the production Site URL and
+   add the production login URL to Redirect URLs:
+   `https://your-domain.example/login`
+5. Keep a localhost redirect for local development if needed:
+   `http://localhost:3000/login`
+
+The login page passes the current origin as `redirectTo` and preserves a safe
+relative `next` path, so users return to the page they originally requested.
 
 ## Database setup
 

@@ -1532,6 +1532,51 @@ button {
   border-color: var(--green);
 }
 
+.auth-google {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid #b9c8bb;
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.auth-google:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.google-mark {
+  color: #4285f4;
+  font-family: Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 2px;
+  color: #72837a;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+  content: "";
+}
+
 .auth-submit {
   margin-top: 14px;
   padding: 12px;

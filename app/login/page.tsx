@@ -5,6 +5,11 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
+function getSafeNext() {
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next?.startsWith("/") && !next.startsWith("//") ? next : "/";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,9 +19,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    const next = new URLSearchParams(window.location.search).get("next");
     getSupabaseClient().auth.getUser().then(({ data }) => {
-      if (data.user) router.replace(next?.startsWith("/") ? next : "/");
+      if (data.user) router.replace(getSafeNext());
     });
   }, [router]);
 
@@ -35,11 +39,30 @@ export default function LoginPage() {
     } else if (isSignUp && !result.data.session) {
       setMessage("Check your email to confirm your account, then sign in.");
     } else {
-      const next = new URLSearchParams(window.location.search).get("next");
-      router.replace(next?.startsWith("/") ? next : "/");
+      router.replace(getSafeNext());
     }
 
     setLoading(false);
+  }
+
+  async function handleGoogleSignIn() {
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    const redirectUrl = new URL("/login", window.location.origin);
+    const next = getSafeNext();
+    if (next !== "/") redirectUrl.searchParams.set("next", next);
+
+    const { error: signInError } = await getSupabaseClient().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: redirectUrl.toString() },
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+    }
   }
 
   return (
@@ -49,6 +72,12 @@ export default function LoginPage() {
         <p className="eyebrow">Your study desk</p>
         <h1>{isSignUp ? "Create your account." : "Welcome back."}</h1>
         <p className="auth-copy">Save your study progress and keep your review pile with you.</p>
+
+        <button className="auth-google" type="button" onClick={() => void handleGoogleSignIn()} disabled={loading}>
+          <span className="google-mark" aria-hidden="true">G</span>
+          Continue with Google
+        </button>
+        <div className="auth-divider"><span>or use email</span></div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label htmlFor="email">Email</label>
