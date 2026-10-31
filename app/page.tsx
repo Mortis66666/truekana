@@ -53,6 +53,7 @@ export default function LandingPage() {
                 <Link href="/guest">Guest mode</Link>
                 <Link href="/login">Sign in</Link>
                 <Link href="/privacy">Privacy</Link>
+                <Link href="/terms">Terms</Link>
             </footer>
         </main>
     );
