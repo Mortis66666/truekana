@@ -39,6 +39,8 @@ function mapCards(cards: Array<Record<string, unknown>>) {
     id: String(card.id),
     deck_id: String(card.deck_id),
     seen: card.seen === true,
+    progressStatus:
+      typeof card.progressStatus === "number" ? card.progressStatus : undefined,
     question: String(card.kanji),
     answer: Array.isArray(card.reading) ? card.reading.map(String) : [],
     meaning: String(card.meaning),
@@ -333,6 +335,7 @@ export default function StudySetStudy({ id }: { id: string }) {
             card={card}
             levelColor="mint"
             cardIndex={seenCount + 1}
+            isRedemption={card.seen === true && card.progressStatus === 0}
             autoSubmission={settings.autoSubmission}
             showDefinitionAfterCorrect={settings.showDefinitionAfterCorrect}
             onAnswer={review}

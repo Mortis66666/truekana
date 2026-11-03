@@ -934,6 +934,12 @@ button {
   color: #d1d1d1;
 }
 
+.dark-mode .redemption-tag {
+  border-color: #5a4536;
+  background: #382d25;
+  color: #e2b491;
+}
+
 .status-dot {
   width: 7px;
   height: 7px;
@@ -1211,6 +1217,14 @@ button {
 
 .question-card.is-correct {
   border-color: #8fc5a4;
+  background: #f7fcf8;
+  box-shadow: 0 12px 35px #39744c1c, 0 0 0 3px #dcefe1;
+}
+
+.question-card.is-incorrect {
+  border-color: #d99a91;
+  background: #fff9f8;
+  box-shadow: 0 12px 35px #9b41301c, 0 0 0 3px #f4dfdc;
 }
 
 .particle-field {
@@ -1316,6 +1330,27 @@ button {
   font-size: 9px;
 }
 
+.card-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.redemption-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid #edcbb6;
+  border-radius: 5px;
+  background: #fbeee3;
+  color: #a2582f;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .6px;
+  white-space: nowrap;
+}
+
 .card-number {
   color: #aab4ac;
 }
@@ -1403,14 +1438,36 @@ button {
 .feedback {
   position: static;
   margin-top: 20px;
-  color: #4d9b70;
+  padding: 10px 12px;
+  border-radius: 7px;
   font-family: 'DM Mono', monospace;
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-align: center;
 }
 
 .feedback span {
   margin-left: 8px;
-  color: #a1b1a5;
+  font-weight: 400;
+}
+
+.correct-feedback {
+  background: #e4f3e7;
+  color: #32744d;
+}
+
+.correct-feedback span {
+  color: #5e9271;
+}
+
+.incorrect-feedback {
+  background: #fbe8e5;
+  color: #a1433b;
+}
+
+.incorrect-feedback span {
+  color: #b87970;
 }
 
 .revealed-answer {
@@ -1656,6 +1713,18 @@ button {
   color: var(--ink);
 }
 
+.dark-mode .question-card.is-correct {
+  border-color: #668f72;
+  background: #29382e;
+  box-shadow: 0 12px 35px #00000035, 0 0 0 3px #354d3c;
+}
+
+.dark-mode .question-card.is-incorrect {
+  border-color: #a36a62;
+  background: #3d2c2a;
+  box-shadow: 0 12px 35px #00000035, 0 0 0 3px #543a37;
+}
+
 .dark-mode .revealed-answer {
   background: #303030;
 }
@@ -1693,10 +1762,27 @@ button {
 }
 
 .dark-mode .feedback,
-.dark-mode .correct-feedback,
 .dark-mode .revealed-footer button,
 .dark-mode .primary-button {
   color: #d5d5d5;
+}
+
+.dark-mode .correct-feedback {
+  background: #304c38;
+  color: #b5e0bf;
+}
+
+.dark-mode .correct-feedback span {
+  color: #90bf9a;
+}
+
+.dark-mode .incorrect-feedback {
+  background: #563633;
+  color: #f0b5ac;
+}
+
+.dark-mode .incorrect-feedback span {
+  color: #d6958b;
 }
 
 .dark-mode .primary-button {

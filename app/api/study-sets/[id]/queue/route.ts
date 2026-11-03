@@ -1,7 +1,23 @@
 import { requireUser, serverError } from "@/lib/supabase/server";
 
 type Context = { params: Promise<{ id: string }> };
-type DueRow = { card_id: string; status: number; cards: Array<Record<string, unknown>> };
+type EmbeddedCard = {
+  id: string;
+  deck_id: string;
+  kanji: string;
+  meaning: string;
+  reading: string[];
+  decks?: unknown;
+};
+// PostgREST returns a many-to-one embed (progress.card_id -> cards.id) as a single
+// object, not an array. Handle both shapes so a schema change cannot blank the card.
+type DueRow = { card_id: string; status: number; cards: EmbeddedCard | EmbeddedCard[] | null };
+
+function embeddedCard(row: DueRow): Partial<EmbeddedCard> {
+  const { cards } = row;
+  if (Array.isArray(cards)) return cards[0] ?? {};
+  return cards ?? {};
+}
 
 function sampleRandomly<T>(items: T[], count: number) {
   const shuffled = [...items];
@@ -23,7 +39,15 @@ export async function GET(request: Request, { params }: Context) {
   const requestedLimit = Number(new URL(request.url).searchParams.get("limit") ?? 0);
   const isNewSession = new URL(request.url).searchParams.get("start") === "1";
   if (isNewSession) {
-    const { error: sessionError } = await supabase.from("progress").update({ deferred_next_session: false }).eq("study_set_id", id).eq("user_id", user.id).eq("deferred_next_session", true);
+    const { error: sessionError } = await supabase
+      .from("progress")
+      .update({
+        deferred_next_session: false,
+        due: new Date().toISOString()
+      })
+      .eq("study_set_id", id)
+      .eq("user_id", user.id)
+      .eq("deferred_next_session", true);
     if (sessionError) return serverError(sessionError.message);
   }
   const excludedIds = (new URL(request.url).searchParams.get("exclude") ?? "")
@@ -46,11 +70,13 @@ export async function GET(request: Request, { params }: Context) {
   let due: DueRow[] = [];
   let dueError: { message: string } | null = null;
   if (settings.collectRandomly === false) {
-    let dueQuery = supabase.from("progress").select("card_id,due,status,cards(id,deck_id,kanji,meaning,reading,decks(id,name))").eq("study_set_id", id).eq("deferred_next_session", false).lte("due", new Date().toISOString()).order("due").limit(reviewLimit);
-    if (excludedIds.length) dueQuery = dueQuery.not("card_id", "in", `(${excludedIds.join(",")})`);
-    const result = await dueQuery;
-    due = result.data ?? [];
-    dueError = result.error;
+    if (deckIds.length) {
+      let dueQuery = supabase.from("progress").select("card_id,due,status,cards!inner(id,deck_id,kanji,meaning,reading,decks(id,name))").eq("study_set_id", id).eq("deferred_next_session", false).lte("due", new Date().toISOString()).in("cards.deck_id", deckIds).order("due").limit(reviewLimit);
+      if (excludedIds.length) dueQuery = dueQuery.not("card_id", "in", `(${excludedIds.join(",")})`);
+      const result = await dueQuery;
+      due = result.data ?? [];
+      dueError = result.error;
+    }
   } else {
     const dueResults = await Promise.all(deckIds.map(deckId => {
       let dueQuery = supabase.from("progress").select("card_id,due,status,cards!inner(id,deck_id,kanji,meaning,reading,decks(id,name))").eq("study_set_id", id).eq("deferred_next_session", false).lte("due", new Date().toISOString()).eq("cards.deck_id", deckId).limit(200);
@@ -86,12 +112,15 @@ export async function GET(request: Request, { params }: Context) {
   const newCards = settings.collectRandomly !== false
     ? sampleRandomly(availableNewCards ?? [], remainingNewLimit)
     : availableNewCards ?? [];
-  const randomCards = settings.collectRandomly !== false
-    ? sampleRandomly([
-      ...selectedDue.map(item => ({ ...(item.cards[0] ?? {}), seen: true, progressStatus: item.status })),
-      ...newCards.map(card => ({ ...card, seen: false })),
-    ], batchLimit ?? 10)
-    : null;
+  const dueCards = selectedDue.map(item => ({
+    ...embeddedCard(item),
+    seen: true,
+    progressStatus: item.status,
+  }));
+  const newCardPayload = newCards.map(card => ({ ...card, seen: false }));
+  const cards = settings.collectRandomly !== false
+    ? sampleRandomly([...dueCards, ...newCardPayload], batchLimit ?? 10)
+    : [...dueCards, ...newCardPayload];
   const [totalResult, seenResult, correctResult] = await Promise.all([
     supabase.from("cards").select("id", { count: "exact", head: true }).in("deck_id", deckIds),
     supabase.from("progress").select("card_id", { count: "exact", head: true }).eq("study_set_id", id),
@@ -100,10 +129,7 @@ export async function GET(request: Request, { params }: Context) {
   const statsError = totalResult.error ?? seenResult.error ?? correctResult.error;
   if (statsError) return serverError(statsError.message);
   return Response.json({
-    cards: randomCards ?? [
-      ...selectedDue.map(item => ({ ...(item.cards[0] ?? {}), seen: true, progressStatus: item.status })),
-      ...newCards.map(card => ({ ...card, seen: false })),
-    ],
+    cards,
     settings,
     studySet: { name: studySet.name, deckNames },
     stats: {

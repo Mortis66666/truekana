@@ -15,6 +15,7 @@ type KanjiCardProps = {
     card: KanjiCardData;
     levelColor: string;
     cardIndex: number;
+    isRedemption?: boolean;
     autoSubmission?: boolean;
     showDefinitionAfterCorrect?: boolean;
     onAnswer?: (correct: boolean) => Promise<void> | void;
@@ -63,13 +64,14 @@ export default function KanjiCard({
     card,
     levelColor,
     cardIndex,
+    isRedemption = false,
     autoSubmission = true,
     showDefinitionAfterCorrect = false,
     onAnswer,
     onNext
 }: KanjiCardProps) {
     const [input, setInput] = useState("");
-    const [feedback, setFeedback] = useState<"idle" | "correct">("idle");
+    const [feedback, setFeedback] = useState<"idle" | "correct" | "incorrect">("idle");
     const [revealed, setRevealed] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const answeredRef = useRef(false);
@@ -94,14 +96,21 @@ export default function KanjiCard({
     async function answer(correct: boolean) {
         if (answeredRef.current) return;
         answeredRef.current = true;
+        setFeedback(correct ? "correct" : "incorrect");
         onAnswer?.(correct);
         if (correct) {
-            setFeedback("correct");
             if (showDefinitionAfterCorrect) setRevealed(true);
             else onNext();
         } else {
             setRevealed(true);
         }
+    }
+
+    function submitAnswer() {
+        const correct = card.answer.some(
+            answerValue => normalize(answerValue) === normalize(input)
+        );
+        void answer(correct);
     }
 
     function updateInput(value: string) {
@@ -129,7 +138,9 @@ export default function KanjiCard({
         if (event.key === "Enter") {
             event.preventDefault();
             if (revealed) onNext();
-            else void answer(false);
+            else if (!autoSubmission) {
+                submitAnswer();
+            } else void answer(false);
             return;
         }
         if (event.key.length === 1) userInputRef.current = true;
@@ -142,7 +153,13 @@ export default function KanjiCard({
 
     return (
         <div
-            className={`question-card ${feedback === "correct" ? "is-correct" : ""}`}
+            className={`question-card ${
+                feedback === "correct"
+                    ? "is-correct"
+                    : feedback === "incorrect"
+                        ? "is-incorrect"
+                        : ""
+            }`}
         >
             {feedback === "correct" && (
                 <div className="particle-field" aria-hidden="true">
@@ -152,9 +169,20 @@ export default function KanjiCard({
                 </div>
             )}
             <div className="card-topline">
-                <span className={`deck-tag ${levelColor}`}>
-                    JLPT {card.level}
-                </span>
+                <div className="card-tags">
+                    <span className={`deck-tag ${levelColor}`}>
+                        JLPT {card.level}
+                    </span>
+                    {isRedemption && (
+                        <span
+                            className="redemption-tag"
+                            title="You answered this card wrong last time"
+                            aria-label="Redemption card: answered wrong last time"
+                        >
+                            <span aria-hidden="true">↺</span> Redemption
+                        </span>
+                    )}
+                </div>
                 <span className="card-number">
                     Card {String(cardIndex + 1).padStart(2, "0")}
                 </span>
@@ -205,20 +233,35 @@ export default function KanjiCard({
                         </div>
                         <div className="input-hint">
                             <span>Type romaji, edit the kana directly</span>
-                            <span className="mini-kbd">↵ reveal / next</span>
+                            <span className="mini-kbd">
+                                ↵ {autoSubmission ? "reveal / next" : "submit"}
+                            </span>
                         </div>
                         <button
                             className="reveal-button"
-                            onClick={() => void answer(false)}
+                            onClick={() =>
+                                autoSubmission ? void answer(false) : submitAnswer()
+                            }
                         >
-                            Reveal answer <span>↵</span>
+                            {autoSubmission ? "Reveal answer" : "Submit answer"}{" "}
+                            <span>↵</span>
                         </button>
                     </>
                 )}
             </div>
-            {feedback === "correct" && (
-                <div className="feedback correct-feedback">
-                    Correct <span>moving on</span>
+            {feedback !== "idle" && (
+                <div
+                    className={`feedback ${
+                        feedback === "correct"
+                            ? "correct-feedback"
+                            : "incorrect-feedback"
+                    }`}
+                    role="status"
+                >
+                    {feedback === "correct" ? "Correct" : "Not quite"}
+                    <span>
+                        {feedback === "correct" ? "moving on" : "answer shown"}
+                    </span>
                 </div>
             )}
             {revealed && (
